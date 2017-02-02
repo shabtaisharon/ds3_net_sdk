@@ -49,6 +49,8 @@ namespace Ds3.Helpers.Strategies.ChunkStrategies
 
         public IEnumerable<TransferItem> GetNextTransferItems(IDs3Client client, MasterObjectList jobResponse)
         {
+            Console.WriteLine(@"In GetNextTransferItems");
+
             this._client = client;
             this._jobResponse = jobResponse;
 
@@ -78,9 +80,11 @@ namespace Ds3.Helpers.Strategies.ChunkStrategies
 
         private IEnumerable<IEnumerable<TransferItem>> EnumerateTransferItemBatches()
         {
+            Console.WriteLine(@"In EnumerateTransferItemBatches");
             //Loop as long as we still have unallocated chunks
             while (true)
             {
+                Console.WriteLine(@"In EnumerateTransferItemBatches while");
                 // Get the current batch of transfer items.
                 TransferItem[] transferItems;
                 lock (this._chunksRemainingLock)
@@ -99,6 +103,8 @@ namespace Ds3.Helpers.Strategies.ChunkStrategies
 
         private TransferItem[] GetNextTransfers()
         {
+            Console.WriteLine(@"In GetNextTransfers");
+
             var clientFactory = this._client.BuildFactory(this._jobResponse.Nodes);
             var transferItem = new HashSet<TransferItem>();
             var chunkId = this._toAllocateChunks.First(); //take the fist chunk in the set to allocate
@@ -115,6 +121,7 @@ namespace Ds3.Helpers.Strategies.ChunkStrategies
                         transferItem.Add(new TransferItem(transferClient, blob));
                     }
                 }
+                Console.WriteLine($@"Number of trasferItem is {transferItem.Count}");
                 this._toAllocateChunks.Remove(chunkId); //remove the allocated chunk from the set
             }
             return transferItem.ToArray();
@@ -122,10 +129,13 @@ namespace Ds3.Helpers.Strategies.ChunkStrategies
 
         private Objects AllocateChunk(IDs3Client client, Guid chunkId)
         {
+            Console.WriteLine(@"In AllocateChunk");
+
             Objects chunk = null;
             var chunkGone = false;
             while (chunk == null && !chunkGone)
             {
+                Console.WriteLine(@"In AllocateChunk in while");
                 client
                     .AllocateJobChunkSpectraS3(new AllocateJobChunkSpectraS3Request(chunkId))
                     .Match(
@@ -151,6 +161,7 @@ namespace Ds3.Helpers.Strategies.ChunkStrategies
         /// <returns> A new list of objects to be processed by the running job</returns>
         private IEnumerable<Objects> GetObjectsNotInCache()
         {
+            Console.WriteLine(@"In GetObjectsNotInCache");
             var notCachedObject = new List<Objects>();
             var hasCachedObject = false;
             foreach (var objectList in _jobResponse.Objects)
