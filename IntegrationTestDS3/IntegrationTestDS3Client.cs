@@ -392,7 +392,7 @@ namespace IntegrationTestDs3
                 });
                 thread.Start();
 
-                //wait until we received at least 300 objects
+                //wait until we put at least 300 objects
                 SpinWait.SpinUntil(() => filesTransfered > 300);
 
                 //cancel the job
