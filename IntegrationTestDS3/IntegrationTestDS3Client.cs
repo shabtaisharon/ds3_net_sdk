@@ -281,27 +281,26 @@ namespace IntegrationTestDs3
                 const string content = "hi im content";
                 var contentBytes = System.Text.Encoding.UTF8.GetBytes(content);
 
-                var objects = new List<Ds3Object>();
+                var fullObjectList = new List<Ds3Object>();
 
                 for (var i = 0; i < numberOfObjects; i++)
                 {
-                    objects.Add(new Ds3Object("File" + i, contentBytes.Length));
+                    fullObjectList.Add(new Ds3Object("File" + i, contentBytes.Length));
                 }
 
                 Helpers.EnsureBucketExists(bucketName);
 
                 //upload test files
-                var putJob = Helpers.StartWriteJob(bucketName, objects);
+                var putJob = Helpers.StartWriteJob(bucketName, fullObjectList);
                 putJob.Transfer(key => new MemoryStream(contentBytes));
 
                 //start the read job
-                var getJob = Helpers.StartReadJob(bucketName, objects);
+                var getJob = Helpers.StartReadJob(bucketName, fullObjectList);
                 var cancellationTokenSource = new CancellationTokenSource();
                 getJob.WithCancellationToken(cancellationTokenSource.Token);
 
                 var filesTransfered = 0;
                 getJob.ItemCompleted += s => { filesTransfered++; };
-
 
                 var thread = new Thread(() =>
                 {
@@ -316,8 +315,8 @@ namespace IntegrationTestDs3
                 });
                 thread.Start();
 
-                //give the thread a sec to start
-                Thread.Sleep(1000);
+                //wait until we received at least 300 objects
+                SpinWait.SpinUntil(() => filesTransfered > 300);
 
                 //cancel the job
                 cancellationTokenSource.Cancel();
