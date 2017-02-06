@@ -1,4 +1,4 @@
-test: longIntegration
+test: integration longIntegration
 
 longIntegration: build
 	mono ./packages/NUnit.ConsoleRunner.3.4.1/tools/nunit3-console.exe ./LongRunningIntegrationTestDs3/bin/Release/LongRunningIntegrationTestDs3.dll
