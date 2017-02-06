@@ -67,7 +67,7 @@ namespace LongRunningIntegrationTestDs3
         public void PutLargeNumberOfObjects()
         {
             const string bucketName = "PutLargeNumberOfObjects";
-            const int numberOfObjects = 100000;
+            const int numberOfObjects = 10000;
 
             try
             {
