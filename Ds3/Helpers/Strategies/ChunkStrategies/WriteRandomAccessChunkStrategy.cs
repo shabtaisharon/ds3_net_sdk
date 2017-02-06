@@ -119,7 +119,7 @@ namespace Ds3.Helpers.Strategies.ChunkStrategies
                     var blob = Blob.Convert(jobObject);
                     if (!(bool)jobObject.InCache)
                     {
-                        Console.WriteLine($"{i} => {jobObject.Name}, {jobObject.Id}, {blob.Context}");
+                        Console.WriteLine($"{i++} => {jobObject.Name}, {jobObject.Id}");
                         transferItem.Add(new TransferItem(transferClient, blob));
                     }
                 }
