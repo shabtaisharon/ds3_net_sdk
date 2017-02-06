@@ -14,6 +14,7 @@
  */
 
 using System.Collections.Generic;
+using System.Threading;
 
 namespace Ds3.Lang
 {
@@ -33,6 +34,7 @@ namespace Ds3.Lang
             {
                 if (this._items.MoveNext())
                 {
+                    Thread.Sleep(100);
                     it = this._items.Current;
                     return true;
                 }
