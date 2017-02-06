@@ -143,6 +143,7 @@ namespace Ds3.Helpers.Jobs
                 {
                     try
                     {
+                        Console.WriteLine($"{Thread.CurrentThread.ManagedThreadId} taking {item.Blob.Context}");
                         this.TransferBlob(item.Client, item.Blob);
                     }
                     catch (Exception ex)
