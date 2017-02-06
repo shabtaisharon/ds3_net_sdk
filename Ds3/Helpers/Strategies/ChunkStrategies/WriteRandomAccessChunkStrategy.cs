@@ -110,6 +110,7 @@ namespace Ds3.Helpers.Strategies.ChunkStrategies
             var chunkId = this._toAllocateChunks.First(); //take the fist chunk in the set to allocate
             var allocatedChunk = AllocateChunk(this._client, chunkId);
 
+            var i = 1;
             if (allocatedChunk != null)
             {
                 var transferClient = clientFactory.GetClientForNodeId(allocatedChunk.NodeId);
@@ -118,6 +119,7 @@ namespace Ds3.Helpers.Strategies.ChunkStrategies
                     var blob = Blob.Convert(jobObject);
                     if (!(bool)jobObject.InCache)
                     {
+                        Console.WriteLine($"{i} => {jobObject.Name}, {jobObject.Id}, {blob.Context}");
                         transferItem.Add(new TransferItem(transferClient, blob));
                     }
                 }
