@@ -83,7 +83,7 @@ namespace LongRunningIntegrationTestDs3
 
                 Ds3TestUtils.PutFiles(_client, bucketName, objects, key => new MemoryStream(contentBytes));
 
-                //Assert.AreEqual(numberOfObjects, _client.GetBucket(new GetBucketRequest(bucketName).WithMaxKeys(numberOfObjects)).ResponsePayload.Objects.Count());
+                Assert.AreEqual(numberOfObjects, _client.GetBucket(new GetBucketRequest(bucketName).WithMaxKeys(numberOfObjects)).ResponsePayload.Objects.Count());
             }
             finally
             {
