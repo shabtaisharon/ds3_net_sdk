@@ -34,7 +34,6 @@ namespace Ds3.Lang
             {
                 if (this._items.MoveNext())
                 {
-                    Thread.Sleep(100);
                     it = this._items.Current;
                     return true;
                 }
