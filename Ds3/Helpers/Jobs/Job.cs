@@ -143,7 +143,7 @@ namespace Ds3.Helpers.Jobs
                 {
                     try
                     {
-                        Console.WriteLine($"{Thread.CurrentThread.ManagedThreadId} taking {item.Blob.Context}");
+                        Console.WriteLine($"{DateTime.Now} {Thread.CurrentThread.ManagedThreadId} taking {item.Blob.Context}");
                         this.TransferBlob(item.Client, item.Blob);
                     }
                     catch (Exception ex)
@@ -155,6 +155,7 @@ namespace Ds3.Helpers.Jobs
                     }
                     finally
                     {
+                        Console.WriteLine($"{DateTime.Now} {Thread.CurrentThread.ManagedThreadId} CompleteBlob {item.Blob.Context}");
                         this._chunkStrategy.CompleteBlob(item.Blob);
                         this._cancellationToken.ThrowIfCancellationRequested();
                     }
