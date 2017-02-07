@@ -42,7 +42,6 @@ namespace IntegrationTestDS3
 
             return Ds3Builder.FromEnv().
                 WithCopyBufferSize(copyBufferSize ?? defaultCopyBufferSize).
-                WithConnectionLimit(100).
                 Build();
         }
 
@@ -109,7 +108,7 @@ namespace IntegrationTestDS3
 
             helper.EnsureBucketExists(bucketName);
 
-            var job = helper.StartWriteJob(bucketName, files, helperStrategy: helperStrategy);
+            var job = helper.StartWriteJob(bucketName, files, helperStrategy: helperStrategy).WithMaxParallelRequests(100);
 
             job.Transfer(createStreamForTransferItem);
         }
