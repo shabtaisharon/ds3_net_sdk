@@ -63,7 +63,7 @@ namespace Ds3.Helpers.Strategies.StreamFactory
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine($@"Failed to dispose underline stream for blob ({0}, {1}:{2})\n{e.Message}\n{e.StackTrace}", blob.Context, blob.Range.Start, blob.Range.End);
+                    Console.WriteLine($@"Failed to dispose underline stream for blob ({blob.Context}, {blob.Range.Start}:{blob.Range.End})\n{e.Message}\n{e.StackTrace}");
                     throw;
                 }
                 this._streamStore.Remove(blob);
