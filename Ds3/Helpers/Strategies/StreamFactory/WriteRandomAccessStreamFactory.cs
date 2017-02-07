@@ -57,8 +57,15 @@ namespace Ds3.Helpers.Strategies.StreamFactory
                 {
                     throw new StreamNotFoundException(string.Format("Stream not found for blob ({0}, {1}:{2})", blob.Context, blob.Range.Start, blob.Range.End));
                 }
-
-                ((NonDisposablePutObjectRequestStream)stream).DisposeUnderlineStream();
+                try
+                {
+                    ((NonDisposablePutObjectRequestStream) stream).DisposeUnderlineStream();
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($@"Failed to dispose underline stream for blob ({0}, {1}:{2})\n{e.Message}\n{e.StackTrace}", blob.Context, blob.Range.Start, blob.Range.End);
+                    throw;
+                }
                 this._streamStore.Remove(blob);
             }
         }
