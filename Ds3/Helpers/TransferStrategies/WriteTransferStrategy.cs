@@ -14,6 +14,7 @@
  */
 
 using System;
+using System.Threading;
 using Ds3.Calls;
 
 namespace Ds3.Helpers.TransferStrategies
@@ -47,12 +48,17 @@ namespace Ds3.Helpers.TransferStrategies
                 }
                 catch (Exception ex)
                 {
+                    Console.WriteLine($@"{DateTime.Now} {Thread.CurrentThread.ManagedThreadId} got an exception for object {request.ObjectName}\n{ex.Message}\n{ex.StackTrace}");
                     if (ex.IsRecoverableException())
                     {
+                        Console.WriteLine(
+                            $@"{DateTime.Now} {Thread.CurrentThread.ManagedThreadId} got a recoverable exception");
                         BestEffort.ModifyForRetry(transferStrategyOptions.Stream, transferStrategyOptions.ObjectTransferAttempts, ref currentTry, request.ObjectName, request.Offset.Value, ex);
                     }
                     else
                     {
+                        Console.WriteLine(
+                            $@"{DateTime.Now} {Thread.CurrentThread.ManagedThreadId} got an unrecoverable exception");
                         throw;
                     }
                 }
