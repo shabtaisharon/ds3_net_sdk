@@ -274,7 +274,7 @@ namespace IntegrationTestDs3
         public void GetObjectsWithResume()
         {
             const string bucketName = "GetObjectsWithResume";
-            const int numberOfObjects = 1000;
+            const int numberOfObjects = 10000;
 
             try
             {
