@@ -274,7 +274,7 @@ namespace IntegrationTestDs3
         public void GetObjectsWithResume()
         {
             const string bucketName = "GetObjectsWithResume";
-            const int numberOfObjects = 10000;
+            const int numberOfObjects = 1000;
 
             try
             {
@@ -307,7 +307,14 @@ namespace IntegrationTestDs3
                 {
                     try
                     {
-                        getJob.Transfer(key => new MemoryStream(contentBytes));
+                        getJob.Transfer(key =>
+                        {
+                            if (key.Equals("File200"))
+                            {
+                                throw new Exception("Failing file 200");
+                            }
+                            return new MemoryStream(contentBytes);
+                        });
                     }
                     catch (Exception e)
                     {
@@ -326,6 +333,8 @@ namespace IntegrationTestDs3
                 thread.Join();
 
                 Assert.Less(filesTransfered, numberOfObjects);
+
+                Assert.AreEqual(1, Client.GetActiveJobsSpectraS3(new GetActiveJobsSpectraS3Request()).ResponsePayload.ActiveJobs.Where(a => a.Id == getJob.JobId).Count());
 
                 //resume the job
                 var resumedJob = Helpers.RecoverReadJob(getJob.JobId);
