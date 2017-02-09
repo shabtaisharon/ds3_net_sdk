@@ -318,7 +318,7 @@ namespace IntegrationTestDs3
                     }
                     catch (Exception e)
                     {
-                        Console.WriteLine($"{DateTime.Now} {Thread.CurrentThread.ManagedThreadId} got an exception {e.Message}\n{e.StackTrace}");
+                        Console.WriteLine($"[{DateTime.Now}] [{Thread.CurrentThread.ManagedThreadId}] [GetObjectsWithResume] got an exception: Message: {e.Message}\n{e.StackTrace}");
                     }
                 });
                 thread.Start();
@@ -397,7 +397,7 @@ namespace IntegrationTestDs3
                     }
                     catch (Exception e)
                     {
-                        Console.WriteLine($"{DateTime.Now} {Thread.CurrentThread.ManagedThreadId} got an exception {e.Message}\n{e.StackTrace}");
+                        Console.WriteLine($"{DateTime.Now} {Thread.CurrentThread.ManagedThreadId} [PutObjectsWithResume] got an exception {e.Message}\n{e.StackTrace}");
                     }
                 });
                 thread.Start();
