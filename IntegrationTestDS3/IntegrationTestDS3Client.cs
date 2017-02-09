@@ -307,6 +307,9 @@ namespace IntegrationTestDs3
                 {
                     try
                     {
+                        getJob.OnFailure +=
+                            (s, l, arg3) =>
+                                Console.WriteLine($"{s} failed with {arg3.Message}\n{arg3.GetType()}\n{arg3.StackTrace}");
                         getJob.Transfer(key =>
                         {
                             if (key.Equals("File200"))
@@ -316,13 +319,9 @@ namespace IntegrationTestDs3
                             return new MemoryStream(contentBytes);
                         });
                     }
-                    catch (OperationCanceledException e)
-                    {
-                        Console.WriteLine($"{DateTime.Now} {Thread.CurrentThread.ManagedThreadId} [GetObjectsWithResume - OperationCanceledException] got an exception");
-                    }
                     catch (Exception e)
                     {
-                        Console.WriteLine($"[{DateTime.Now}] [{Thread.CurrentThread.ManagedThreadId}] [GetObjectsWithResume] got an exception: Message: {e.Message}\n{e.StackTrace}");
+                        //Console.WriteLine($"[{DateTime.Now}] [{Thread.CurrentThread.ManagedThreadId}] [GetObjectsWithResume] got an exception: Message: {e.Message}\n{e.StackTrace}");
                     }
                 });
                 thread.Start();
@@ -399,13 +398,9 @@ namespace IntegrationTestDs3
                     {
                         job.Transfer(key => new MemoryStream(contentBytes));
                     }
-                    catch (OperationCanceledException e)
+                    catch (Exception)
                     {
-                        Console.WriteLine($"{DateTime.Now} {Thread.CurrentThread.ManagedThreadId} [PutObjectsWithResume - OperationCanceledException] got an exception");
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine($"{DateTime.Now} {Thread.CurrentThread.ManagedThreadId} [PutObjectsWithResume] got an exception {e.Message}\n{e.StackTrace}");
+                        //pass
                     }
                 });
                 thread.Start();

@@ -145,6 +145,10 @@ namespace Ds3.Helpers.Jobs
                     {
                         this.TransferBlob(item.Client, item.Blob);
                     }
+                    catch (OperationCanceledException)
+                    {
+                        throw;
+                    }
                     catch (Exception ex)
                     {
                         //if we have an OnFailure event then invoke with blob name, offset and the exception
