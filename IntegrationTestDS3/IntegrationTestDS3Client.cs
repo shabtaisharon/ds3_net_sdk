@@ -316,6 +316,10 @@ namespace IntegrationTestDs3
                             return new MemoryStream(contentBytes);
                         });
                     }
+                    catch (OperationCanceledException e)
+                    {
+                        Console.WriteLine($"{DateTime.Now} {Thread.CurrentThread.ManagedThreadId} [GetObjectsWithResume - OperationCanceledException] got an exception");
+                    }
                     catch (Exception e)
                     {
                         Console.WriteLine($"[{DateTime.Now}] [{Thread.CurrentThread.ManagedThreadId}] [GetObjectsWithResume] got an exception: Message: {e.Message}\n{e.StackTrace}");
@@ -394,6 +398,10 @@ namespace IntegrationTestDs3
                     try
                     {
                         job.Transfer(key => new MemoryStream(contentBytes));
+                    }
+                    catch (OperationCanceledException e)
+                    {
+                        Console.WriteLine($"{DateTime.Now} {Thread.CurrentThread.ManagedThreadId} [PutObjectsWithResume - OperationCanceledException] got an exception");
                     }
                     catch (Exception e)
                     {
