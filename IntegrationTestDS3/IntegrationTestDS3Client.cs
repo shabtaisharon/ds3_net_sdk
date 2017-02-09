@@ -307,21 +307,11 @@ namespace IntegrationTestDs3
                 {
                     try
                     {
-                        getJob.OnFailure +=
-                            (s, l, arg3) =>
-                                Console.WriteLine($"{s} failed with {arg3.Message}\n{arg3.GetType()}\n{arg3.StackTrace}");
-                        getJob.Transfer(key =>
-                        {
-                            if (key.Equals("File200"))
-                            {
-                                throw new Exception("Failing file 200");
-                            }
-                            return new MemoryStream(contentBytes);
-                        });
+                        getJob.Transfer(key => new MemoryStream(contentBytes));
                     }
-                    catch (Exception e)
+                    catch (Exception)
                     {
-                        //Console.WriteLine($"[{DateTime.Now}] [{Thread.CurrentThread.ManagedThreadId}] [GetObjectsWithResume] got an exception: Message: {e.Message}\n{e.StackTrace}");
+                        //pass
                     }
                 });
                 thread.Start();
@@ -337,7 +327,7 @@ namespace IntegrationTestDs3
 
                 Assert.Less(filesTransfered, numberOfObjects);
 
-                Assert.AreEqual(1, Client.GetActiveJobsSpectraS3(new GetActiveJobsSpectraS3Request()).ResponsePayload.ActiveJobs.Where(a => a.Id == getJob.JobId).Count());
+                Assert.AreEqual(1, Client.GetActiveJobsSpectraS3(new GetActiveJobsSpectraS3Request()).ResponsePayload.ActiveJobs.Count(a => a.Id == getJob.JobId));
 
                 //resume the job
                 var resumedJob = Helpers.RecoverReadJob(getJob.JobId);
