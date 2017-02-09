@@ -386,9 +386,9 @@ namespace IntegrationTestDs3
                     {
                         job.Transfer(key => new MemoryStream(contentBytes));
                     }
-                    catch (Exception)
+                    catch (Exception e)
                     {
-                        // pass
+                        Console.WriteLine($"{DateTime.Now} {Thread.CurrentThread.ManagedThreadId} got an exception {e.Message}\n{e.StackTrace}");
                     }
                 });
                 thread.Start();
