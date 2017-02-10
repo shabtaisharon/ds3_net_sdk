@@ -42,6 +42,7 @@ namespace IntegrationTestDS3
 
             return Ds3Builder.FromEnv().
                 WithCopyBufferSize(copyBufferSize ?? defaultCopyBufferSize).
+                WithConnectionLimit(100).
                 Build();
         }
 
