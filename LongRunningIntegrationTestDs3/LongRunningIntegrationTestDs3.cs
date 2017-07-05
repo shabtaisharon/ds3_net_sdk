@@ -26,6 +26,8 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using Ds3.Runtime;
+using System.Collections.Concurrent;
+using System.Threading;
 
 namespace LongRunningIntegrationTestDs3
 {
@@ -92,6 +94,82 @@ namespace LongRunningIntegrationTestDs3
             {
                 Ds3TestUtils.DeleteBucket(_client, bucketName);
             }
+        }
+
+        [Test]
+        public void TestAggregationJob()
+        {
+            const string bucketName = "TestAggregationJob";
+            const int numberOfObjects = 10000;
+            const int numberOfThreads = 2;
+            
+			try
+            {
+                _helpers.EnsureBucketExists(bucketName);
+
+                const string content = "hi im content";
+                var contentBytes = System.Text.Encoding.UTF8.GetBytes(content);
+                var exceptionsThrown = new ConcurrentQueue<Exception>();
+
+                var threads = new List<Thread>();
+                for (var i = 0; i < numberOfThreads; i++)
+                {
+                    var thread = new Thread(AggregationTrasfer(bucketName, contentBytes, GetObjects(numberOfObjects, contentBytes.LongLength), exceptionsThrown));
+                    thread.Start();
+                    threads.Add(thread);
+                }
+
+                foreach (var thread in threads)
+                {
+                    thread.Join();
+                }
+
+                if (exceptionsThrown.Count == 1)
+                {
+                    throw exceptionsThrown.ElementAt(0);
+                }
+
+                if (exceptionsThrown.Count > 1)
+                {
+                    throw new AggregateException(exceptionsThrown);
+                }
+
+                Assert.AreEqual(numberOfObjects * numberOfThreads, _helpers.ListObjects(bucketName).Count());
+            }
+            finally
+            {
+                Ds3TestUtils.DeleteBucket(_client, bucketName);
+            }
+        }
+
+        public ThreadStart AggregationTrasfer(string bucketName, byte[] contentBytes, IList<Ds3Object> files, ConcurrentQueue<Exception> exceptionsThrown)
+        {
+            return new ThreadStart(() =>
+            {
+                try
+                {
+                    var options = new Ds3WriteJobOptions { Aggregating = true };
+                    var strategy = new WriteRandomAccessHelperStrategy(withAggregation: true);
+
+                    var job = _helpers.StartWriteJob(bucketName, files, options, strategy);
+                    job.Transfer(key => new MemoryStream(contentBytes));
+                }
+                catch (Exception e)
+                {
+                    exceptionsThrown.Enqueue(e);
+                }
+            });
+        }
+
+        private static IList<Ds3Object> GetObjects(int numberOfObjects, long contentBytesLength)
+        {
+            var objects = new List<Ds3Object>();
+            for (var i = 0; i < numberOfObjects; i++)
+            {
+                objects.Add(new Ds3Object(Guid.NewGuid().ToString(), contentBytesLength));
+            }
+
+            return objects;
         }
 
         [Test]
