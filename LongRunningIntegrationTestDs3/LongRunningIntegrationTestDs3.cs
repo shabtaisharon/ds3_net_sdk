@@ -40,6 +40,10 @@ namespace LongRunningIntegrationTestDs3
         private const string FixtureName = "long_integration_test_ds3client";
         private static TempStorageIds _envStorageIds;
 
+        /* global parameter for resume test */
+        private int _filesTransfered = 0;
+        private IJob _job;
+
         [OneTimeSetUp]
         public void Startup()
         {
@@ -96,14 +100,13 @@ namespace LongRunningIntegrationTestDs3
             }
         }
 
-        [Test]
-        public void TestAggregationJob()
+        [Test, TestCase(1), TestCase(2), TestCase(4)]
+        public void TestAggregationJob(int numberOfThreads)
         {
             const string bucketName = "TestAggregationJob";
             const int numberOfObjects = 10000;
-            const int numberOfThreads = 2;
-            
-			try
+
+            try
             {
                 _helpers.EnsureBucketExists(bucketName);
 
@@ -114,7 +117,7 @@ namespace LongRunningIntegrationTestDs3
                 var threads = new List<Thread>();
                 for (var i = 0; i < numberOfThreads; i++)
                 {
-                    var thread = new Thread(AggregationTrasfer(bucketName, contentBytes, GetObjects(numberOfObjects, contentBytes.LongLength), exceptionsThrown));
+                    var thread = new Thread(AggregationTrasfer(bucketName, contentBytes, GetObjects(numberOfObjects, contentBytes.LongLength), exceptionsThrown, null));
                     thread.Start();
                     threads.Add(thread);
                 }
@@ -142,17 +145,27 @@ namespace LongRunningIntegrationTestDs3
             }
         }
 
-        public ThreadStart AggregationTrasfer(string bucketName, byte[] contentBytes, IList<Ds3Object> files, ConcurrentQueue<Exception> exceptionsThrown)
+        public ThreadStart AggregationTrasfer(string bucketName, byte[] contentBytes, IEnumerable<Ds3Object> files, ConcurrentQueue<Exception> exceptionsThrown, CancellationTokenSource cancellationTokenSource)
         {
             return new ThreadStart(() =>
             {
                 try
                 {
-                    var options = new Ds3WriteJobOptions { Aggregating = true };
-                    var strategy = new WriteRandomAccessHelperStrategy(withAggregation: true);
+                    var strategy = new WriteAggregateJobsHelperStrategy(files);
 
-                    var job = _helpers.StartWriteJob(bucketName, files, options, strategy);
+                    var job = _helpers.StartWriteJob(bucketName, files, helperStrategy: strategy);
+                    if (cancellationTokenSource != null)
+                    {
+                        job.WithCancellationToken(cancellationTokenSource.Token);
+                        job.ItemCompleted += s => { _filesTransfered++; };
+                        _job = job;
+                    }
+
                     job.Transfer(key => new MemoryStream(contentBytes));
+                }
+                catch(AggregateException e)
+                {
+                    if (e.InnerExceptions.Any(inner => !(inner is OperationCanceledException))) throw e;
                 }
                 catch (Exception e)
                 {
@@ -171,6 +184,84 @@ namespace LongRunningIntegrationTestDs3
 
             return objects;
         }
+
+        [Test, TestCase(1), TestCase(2), TestCase(4)]
+        public void TestRecoverAggregatedWriteJob(int numberOfThreads)
+        {
+            const string bucketName = "TestRecoverAggregatedWriteJob";
+            const int numberOfObjects = 10000;
+
+            try
+            {
+                _helpers.EnsureBucketExists(bucketName);
+
+                const string content = "hi im content";
+                var contentBytes = System.Text.Encoding.UTF8.GetBytes(content);
+                var exceptionsThrown = new ConcurrentQueue<Exception>();
+                var cancellationTokenSource = new CancellationTokenSource();
+                IEnumerable<Ds3Object> objects = null;
+
+                var threads = new List<Thread>();
+                for (var i = 0; i < numberOfThreads; i++)
+                {
+                    Thread thread;
+                    if (i == 0)
+                    {
+                        objects = GetObjects(numberOfObjects, contentBytes.LongLength);
+                        thread = new Thread(AggregationTrasfer(bucketName, contentBytes, objects, exceptionsThrown, cancellationTokenSource));
+                    }
+                    else
+                    {
+                        thread = new Thread(AggregationTrasfer(bucketName, contentBytes, GetObjects(numberOfObjects, contentBytes.LongLength), exceptionsThrown, null));
+                    }
+
+                    thread.Start();
+                    threads.Add(thread);
+                }
+
+                //wait until we put at least half of the objects from job1
+                SpinWait.SpinUntil(() => _filesTransfered > (numberOfObjects / 2));
+
+                //cancel the first job
+                cancellationTokenSource.Cancel();
+
+                //wait for the threads to finish
+                foreach (var thread in threads)
+                {
+                    thread.Join();
+                }
+
+                if (exceptionsThrown.Count == 1)
+                {
+                    throw exceptionsThrown.ElementAt(0);
+                }
+
+                if (exceptionsThrown.Count > 1)
+                {
+                    throw new AggregateException(exceptionsThrown);
+                }
+
+                Assert.Less(_filesTransfered, numberOfObjects);
+
+                //Make sure the job is still active in order to resume it
+                Assert.True(_client.GetActiveJobsSpectraS3(new GetActiveJobsSpectraS3Request()).ResponsePayload.ActiveJobs.Any(activeJob => activeJob.Id == _job.JobId));
+
+                //resume the job
+                var resumedJob = _helpers.RecoverAggregatedWriteJob(_job.JobId, objects);
+
+                resumedJob.ItemCompleted += s => { _filesTransfered++; };
+
+                resumedJob.Transfer(key => new MemoryStream(contentBytes));
+
+                Assert.AreEqual(numberOfObjects, _filesTransfered);
+                Assert.AreEqual(numberOfObjects * numberOfThreads, _helpers.ListObjects(bucketName).Count());
+            }
+            finally
+            {
+                Ds3TestUtils.DeleteBucket(_client, bucketName);
+            }
+        }
+
 
         [Test]
         public void TestChecksumStreamingWithMultiChunks()
