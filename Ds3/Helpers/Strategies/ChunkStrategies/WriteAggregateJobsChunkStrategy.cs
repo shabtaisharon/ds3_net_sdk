@@ -9,18 +9,18 @@ namespace Ds3.Helpers.Strategies.ChunkStrategies
     public class WriteAggregateJobsChunkStrategy : IChunkStrategy
     {
         private IChunkStrategy _writeRandomAccessChunkStrategy;
-        private IEnumerable<Ds3Object> _objects;
+        private IEnumerable<string> _objects;
         private MasterObjectList _jobResponse;
         
-        public WriteAggregateJobsChunkStrategy(IEnumerable<Ds3Object> objects, int retryAfter)
+        public WriteAggregateJobsChunkStrategy(IEnumerable<Ds3Object> objects, int retryAfter = -1)
             : this(Thread.Sleep, objects, retryAfter)
         {
         }
 
-        public WriteAggregateJobsChunkStrategy(Action<TimeSpan> wait, IEnumerable<Ds3Object> objects, int retryAfter)
+        public WriteAggregateJobsChunkStrategy(Action<TimeSpan> wait, IEnumerable<Ds3Object> objects, int retryAfter = -1)
         {
-            _writeRandomAccessChunkStrategy = new WriteRandomAccessChunkStrategy(retryAfter);
-            this._objects = objects;
+            _writeRandomAccessChunkStrategy = new WriteRandomAccessChunkStrategy(wait, retryAfter);
+            this._objects = objects.Select(obj => obj.Name);
         }
 
         public IEnumerable<TransferItem> GetNextTransferItems(IDs3Client client, MasterObjectList jobResponse)
@@ -51,10 +51,25 @@ namespace Ds3.Helpers.Strategies.ChunkStrategies
 
             foreach (var objectList in _jobResponse.Objects)
             {
-                var filter = objectList.ObjectsList.Where(obj => _objects.Contains(new Ds3Object(obj.Name, obj.Length)));
+                IList<BulkObject> filter = new List<BulkObject>();
+                foreach(var obj in objectList.ObjectsList)
+                {
+                    if (_objects.Contains(obj.Name))
+                    {
+                        filter.Add(obj);
+                    }
+                }
+
                 if (filter.Any())
                 {
-                    filteredObjectsList.Add(objectList);
+                    var objects = new Objects
+                    {
+                        ChunkId = objectList.ChunkId,
+                        ChunkNumber = objectList.ChunkNumber,
+                        NodeId = objectList.NodeId,
+                        ObjectsList = filter
+                    };
+                    filteredObjectsList.Add(objects);
                 }
             }
 
