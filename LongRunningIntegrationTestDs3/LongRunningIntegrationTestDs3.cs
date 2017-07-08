@@ -104,7 +104,7 @@ namespace LongRunningIntegrationTestDs3
         public void TestAggregationJob(int numberOfThreads)
         {
             const string bucketName = "TestAggregationJob";
-            const int numberOfObjects = 10000;
+            const int numberOfObjects = 1000;
 
             try
             {
