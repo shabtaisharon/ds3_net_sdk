@@ -104,7 +104,7 @@ namespace LongRunningIntegrationTestDs3
         public void TestAggregationJob(int numberOfThreads)
         {
             const string bucketName = "TestAggregationJob";
-            const int numberOfObjects = 1000;
+            const int numberOfObjects = 10000;
 
             try
             {
@@ -162,6 +162,10 @@ namespace LongRunningIntegrationTestDs3
                     }
 
                     job.Transfer(key => new MemoryStream(contentBytes));
+                }
+                catch(OperationCanceledException)
+                {
+                    //pass
                 }
                 catch(AggregateException e)
                 {
