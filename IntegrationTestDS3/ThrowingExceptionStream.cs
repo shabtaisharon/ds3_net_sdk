@@ -15,6 +15,7 @@
 
 using System.IO;
 using System;
+using System.Threading;
 
 namespace IntegrationTestDS3
 {
@@ -55,6 +56,7 @@ namespace IntegrationTestDS3
 
         public override void Write(byte[] buffer, int offset, int count)
         {
+            Thread.Sleep(1000);
             throw new Exception("something went wrong");
         }
 
