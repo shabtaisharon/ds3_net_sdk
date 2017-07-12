@@ -269,7 +269,7 @@ namespace LongRunningIntegrationTestDs3
         }
 
 
-        [Test]
+       //[Test]
         public void TestChecksumStreamingWithMultiChunks()
         {
             const string bucketName = "TestChecksumStreamingWithMultiChunks";
@@ -325,7 +325,7 @@ namespace LongRunningIntegrationTestDs3
             }
         }
 
-        [Test]
+        //[Test]
         public void TestChecksumStreamingWithMultiStreams()
         {
             const string bucketName = "TestChecksumStreamingWithMultiStreams";
