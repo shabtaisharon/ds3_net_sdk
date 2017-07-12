@@ -42,7 +42,7 @@ namespace LongRunningIntegrationTestDs3
 
         /* global parameter for resume test */
         private int _filesTransfered = 0;
-        private IJob _job;
+        private Guid _jobId;
 
         [OneTimeSetUp]
         public void Startup()
@@ -158,7 +158,7 @@ namespace LongRunningIntegrationTestDs3
                     {
                         job.WithCancellationToken(cancellationTokenSource.Token);
                         job.ItemCompleted += s => { _filesTransfered++; };
-                        _job = job;
+                        _jobId = job.JobId;
                     }
 
                     job.Transfer(key => new MemoryStream(contentBytes));
@@ -169,7 +169,10 @@ namespace LongRunningIntegrationTestDs3
                 }
                 catch(AggregateException e)
                 {
-                    if (e.InnerExceptions.Any(inner => !(inner is OperationCanceledException))) throw e;
+                    if (e.InnerExceptions.Any(inner => !(inner is OperationCanceledException)))
+                    {
+                        exceptionsThrown.Enqueue(e);
+                    }
                 }
                 catch (Exception e)
                 {
@@ -192,7 +195,7 @@ namespace LongRunningIntegrationTestDs3
         [Test, TestCase(1), TestCase(2), TestCase(4)]
         public void TestRecoverAggregatedWriteJob(int numberOfThreads)
         {
-            const string bucketName = "TestRecoverAggregatedWriteJob";
+            string bucketName = $"TestRecoverAggregatedWriteJob_{numberOfThreads}";
             const int numberOfObjects = 10000;
 
             try
@@ -248,11 +251,10 @@ namespace LongRunningIntegrationTestDs3
                 Assert.Less(_filesTransfered, numberOfObjects);
 
                 //Make sure the job is still active in order to resume it
-                Assert.True(_client.GetActiveJobsSpectraS3(new GetActiveJobsSpectraS3Request()).ResponsePayload.ActiveJobs.Any(activeJob => activeJob.Id == _job.JobId));
+                Assert.True(_client.GetActiveJobsSpectraS3(new GetActiveJobsSpectraS3Request()).ResponsePayload.ActiveJobs.Any(activeJob => activeJob.Id == _jobId));
 
                 //resume the job
-                var resumedJob = _helpers.RecoverAggregatedWriteJob(_job.JobId, objects);
-
+                var resumedJob = _helpers.RecoverAggregatedWriteJob(_jobId, objects);
                 resumedJob.ItemCompleted += s => { _filesTransfered++; };
 
                 resumedJob.Transfer(key => new MemoryStream(contentBytes));

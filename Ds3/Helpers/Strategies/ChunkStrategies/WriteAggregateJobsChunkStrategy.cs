@@ -11,7 +11,7 @@ namespace Ds3.Helpers.Strategies.ChunkStrategies
         private IChunkStrategy _writeRandomAccessChunkStrategy;
         private IEnumerable<string> _objects;
         private MasterObjectList _jobResponse;
-        
+
         public WriteAggregateJobsChunkStrategy(IEnumerable<Ds3Object> objects, int retryAfter = -1)
             : this(Thread.Sleep, objects, retryAfter)
         {
@@ -52,11 +52,14 @@ namespace Ds3.Helpers.Strategies.ChunkStrategies
             foreach (var objectList in _jobResponse.Objects)
             {
                 IList<BulkObject> filter = new List<BulkObject>();
-                foreach(var obj in objectList.ObjectsList)
+                foreach (var obj in objectList.ObjectsList)
                 {
-                    if (_objects.Contains(obj.Name))
+                    if (_objects.Contains(obj.Name)) //make sure the object is part of the current job
                     {
-                        filter.Add(obj);
+                        if (obj.InCache.HasValue && obj.InCache.Value == false) //make sure the obj is not already InCache
+                        {
+                            filter.Add(obj);
+                        }
                     }
                 }
 
