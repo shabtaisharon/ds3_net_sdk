@@ -371,12 +371,11 @@ namespace IntegrationTestDs3
             {
                 throw ex;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Console.WriteLine(ex);
-
                 var resumedJob = Helpers.RecoverReadJob(job.JobId);
                 resumedJob.Transfer(FileHelpers.BuildFileGetter(TestDirectoryDest));
+
                 var postFolder = FileHelpers.ListObjectsForDirectory(TestDirectoryDest);
                 var postFolderCount = postFolder.Count();
                 Assert.AreEqual(postFolderCount, ListBucketObjects(bucketName).Count());
