@@ -345,7 +345,7 @@ namespace IntegrationTestDs3
             }
         }
 
-        [Test]
+        //[Test]
         public void TestGetObjectsWithResumeAfterException()
         {
             const string bucketName = "TestGetObjectsWithResumeAfterException";
@@ -354,8 +354,6 @@ namespace IntegrationTestDs3
             try
             {
                 Ds3TestUtils.LoadTestData(Client, bucketName);
-                //var client = Ds3Builder.FromEnv().Build();
-                //var helper = new Ds3ClientHelpers(client);
 
                 // Creates a bulk job with all of the objects in the bucket.
                 job = Helpers.StartReadAllJob(bucketName);
