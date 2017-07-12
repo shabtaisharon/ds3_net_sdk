@@ -100,7 +100,7 @@ namespace LongRunningIntegrationTestDs3
             }
         }
 
-        [Test, TestCase(1), TestCase(2)]
+        [Test, TestCase(1), TestCase(2), TestCase(4)]
         public void TestAggregationJob(int numberOfThreads)
         {
             const string bucketName = "TestAggregationJob";
@@ -192,7 +192,7 @@ namespace LongRunningIntegrationTestDs3
             return objects;
         }
 
-        [Test, TestCase(1), TestCase(2)]
+        [Test, TestCase(1), TestCase(2), TestCase(4)]
         public void TestRecoverAggregatedWriteJob(int numberOfThreads)
         {
             string bucketName = $"TestRecoverAggregatedWriteJob_{numberOfThreads}";
@@ -265,6 +265,7 @@ namespace LongRunningIntegrationTestDs3
             finally
             {
                 Ds3TestUtils.DeleteBucket(_client, bucketName);
+                _filesTransfered = 0;
             }
         }
 
