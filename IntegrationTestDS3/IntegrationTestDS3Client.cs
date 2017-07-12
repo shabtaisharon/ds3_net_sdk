@@ -373,6 +373,9 @@ namespace IntegrationTestDs3
             }
             catch (Exception)
             {
+                //Make sure the job is still active in order to resume it
+                Assert.True(Client.GetActiveJobsSpectraS3(new GetActiveJobsSpectraS3Request()).ResponsePayload.ActiveJobs.Any(activeJob => activeJob.Id == job.JobId));
+
                 var resumedJob = Helpers.RecoverReadJob(job.JobId);
                 resumedJob.Transfer(FileHelpers.BuildFileGetter(TestDirectoryDest));
 
