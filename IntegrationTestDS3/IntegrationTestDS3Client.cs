@@ -354,10 +354,11 @@ namespace IntegrationTestDs3
             try
             {
                 Ds3TestUtils.LoadTestData(Client, bucketName);
-                var client = Ds3Builder.FromEnv().Build();
-                var helper = new Ds3ClientHelpers(client);
+                //var client = Ds3Builder.FromEnv().Build();
+                //var helper = new Ds3ClientHelpers(client);
+
                 // Creates a bulk job with all of the objects in the bucket.
-                job = helper.StartReadAllJob(bucketName);
+                job = Helpers.StartReadAllJob(bucketName);
 
                 job.Transfer(key =>
                 {
