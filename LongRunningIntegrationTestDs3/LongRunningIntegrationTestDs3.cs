@@ -100,7 +100,7 @@ namespace LongRunningIntegrationTestDs3
             }
         }
 
-        [Test, TestCase(1), TestCase(2), TestCase(4)]
+        [Test, TestCase(1), TestCase(2)]
         public void TestAggregationJob(int numberOfThreads)
         {
             const string bucketName = "TestAggregationJob";
@@ -157,7 +157,7 @@ namespace LongRunningIntegrationTestDs3
                     if (cancellationTokenSource != null)
                     {
                         job.WithCancellationToken(cancellationTokenSource.Token);
-                        job.ItemCompleted += s => { _filesTransfered++; };
+                        job.ItemCompleted += _ => { _filesTransfered++; };
                         _jobId = job.JobId;
                     }
 
@@ -192,7 +192,7 @@ namespace LongRunningIntegrationTestDs3
             return objects;
         }
 
-        [Test, TestCase(1), TestCase(2), TestCase(4)]
+        [Test, TestCase(1), TestCase(2)]
         public void TestRecoverAggregatedWriteJob(int numberOfThreads)
         {
             string bucketName = $"TestRecoverAggregatedWriteJob_{numberOfThreads}";
@@ -255,7 +255,7 @@ namespace LongRunningIntegrationTestDs3
 
                 //resume the job
                 var resumedJob = _helpers.RecoverAggregatedWriteJob(_jobId, objects);
-                resumedJob.ItemCompleted += s => { _filesTransfered++; };
+                resumedJob.ItemCompleted += _ => { _filesTransfered++; };
 
                 resumedJob.Transfer(key => new MemoryStream(contentBytes));
 
