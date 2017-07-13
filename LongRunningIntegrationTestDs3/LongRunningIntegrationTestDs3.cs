@@ -50,7 +50,7 @@ namespace LongRunningIntegrationTestDs3
             try
             {
                 this._client = Ds3TestUtils.CreateClient(this._copyBufferSize);
-                this._helpers = new Ds3ClientHelpers(this._client);
+                this._helpers = new Ds3ClientHelpers(this._client, retryAfter:5, jobWaitTime:1);
 
                 var dataPolicyId = TempStorageUtil.SetupDataPolicy(FixtureName, false, ChecksumType.Type.MD5, _client);
                 _envStorageIds = TempStorageUtil.Setup(FixtureName, dataPolicyId, _client);
@@ -100,7 +100,7 @@ namespace LongRunningIntegrationTestDs3
             }
         }
 
-        [Test, TestCase(1), TestCase(2), TestCase(4)]
+        [Test, TestCase(1), TestCase(2)]
         public void TestAggregationJob(int numberOfThreads)
         {
             const string bucketName = "TestAggregationJob";
@@ -192,7 +192,7 @@ namespace LongRunningIntegrationTestDs3
             return objects;
         }
 
-        [Test, TestCase(1), TestCase(2), TestCase(4)]
+        [Test, TestCase(1), TestCase(2)]
         public void TestRecoverAggregatedWriteJob(int numberOfThreads)
         {
             string bucketName = $"TestRecoverAggregatedWriteJob_{numberOfThreads}";
