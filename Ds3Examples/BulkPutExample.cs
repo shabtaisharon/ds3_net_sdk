@@ -40,28 +40,31 @@ namespace Ds3Examples
                 )
             ).Build();
 
-            // Set up the high-level abstractions.
-            IDs3ClientHelpers helpers = new Ds3ClientHelpers(client);
 
-            string bucket = "bucket-name";
-            string directory = "TestData";
+            client.ModifyDataPolicySpectraS3(new Ds3.Calls.ModifyDataPolicySpectraS3Request(new Guid("4ed7eb7b-cc03-4ea9-b15d-010983862951")).WithDefaultBlobSize(1024 * 1024 * 1024));
 
-            // Creates a bucket if it does not already exist.
-            helpers.EnsureBucketExists(bucket);
-            if (clientSwitch.TraceVerbose) { Trace.WriteLine(string.Format("Bucket exists: {0}", bucket)); }
+            //// Set up the high-level abstractions.
+            //IDs3ClientHelpers helpers = new Ds3ClientHelpers(client);
 
-            // Creates a bulk job with the server based on the files in a directory (recursively).
-            IJob job = helpers.StartWriteJob(bucket, FileHelpers.ListObjectsForDirectory(directory));
+            //string bucket = "bucket-name";
+            //string directory = "TestData";
 
-            // Tracing example 
-            if (clientSwitch.TraceInfo) { Trace.WriteLine(string.Format("StartWriteJob({0})", bucket)); }
-            if (clientSwitch.TraceVerbose) { Trace.WriteLine(string.Format("Add files from: {0}", directory)); }
+            //// Creates a bucket if it does not already exist.
+            //helpers.EnsureBucketExists(bucket);
+            //if (clientSwitch.TraceVerbose) { Trace.WriteLine(string.Format("Bucket exists: {0}", bucket)); }
 
-            // Keep the job id around. This is useful for job recovery in the case of a failure.
-            Console.WriteLine("Job id {0} started.", job.JobId);
+            //// Creates a bulk job with the server based on the files in a directory (recursively).
+            //IJob job = helpers.StartWriteJob(bucket, FileHelpers.ListObjectsForDirectory(directory));
 
-            // Transfer all of the files.
-            job.Transfer(FileHelpers.BuildFilePutter(directory));
+            //// Tracing example 
+            //if (clientSwitch.TraceInfo) { Trace.WriteLine(string.Format("StartWriteJob({0})", bucket)); }
+            //if (clientSwitch.TraceVerbose) { Trace.WriteLine(string.Format("Add files from: {0}", directory)); }
+
+            //// Keep the job id around. This is useful for job recovery in the case of a failure.
+            //Console.WriteLine("Job id {0} started.", job.JobId);
+
+            //// Transfer all of the files.
+            //job.Transfer(FileHelpers.BuildFilePutter(directory));
 
             // Wait for user input.
             Console.WriteLine("Press enter to continue.");
